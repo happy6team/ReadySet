@@ -10,7 +10,7 @@ from agent_state import AgentState
 
 class FindReportAgent:
     """
-    사업계획서 관련 문서를 검색하고 답변을 생성하는 에이전트
+    사용자 질의를 통해 관련 문서를 검색해오는 에이전트
     """
     
     def __init__(
@@ -92,7 +92,7 @@ class FindReportAgent:
                 model=self.openai_model,
                 temperature=self.temperature,
                 messages=[
-                    {"role": "system", "content": "사업계획서에 대한 질문이 주어졌습니다. 관련 문서 내용을 바탕으로 답변해주세요."},
+                    {"role": "system", "content": "당신은 프로젝트에 대한 이해도가 높은 프로젝트 매니저입니다. 사용자 질문에 대해 관련 문서 내용을 바탕으로 답변해주세요."},
                     {"role": "user", "content": f"질문: {query}\n\n관련 문서:\n{context}"}
                 ]
             )
@@ -185,7 +185,7 @@ class FindReportAgent:
         if search_result["success"]:
             message = {
                 "answer": search_result["answer"],
-                "sources": search_result["sources"][:3]  # 상위 3개 소스만 포함
+                "sources": search_result["sources"][:5]  # 상위 5개 소스만 포함
             }
         else:
             message = {
@@ -298,7 +298,7 @@ if __name__ == "__main__":
             print("\n답변:")
             print(messages[0]["answer"])
             
-            print("\n관련 소스:")
+            print("\n참고 문서:")
             for i, source in enumerate(messages[0].get("sources", []), 1):
                 print(f"\n[소스 {i}] - 섹션: {source.get('section', 'Unknown')}")
                 print(f"출처: {source.get('filename', 'Unknown')}")

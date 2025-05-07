@@ -104,8 +104,8 @@ def main():
     )
 
     # state = test_ung_agent(graph, state)
-    # state = test_find_report_agent(graph, state)
-    state = test_report_writing_guide_agent(graph, state)
+    state = test_find_report_agent(graph, state)
+    # state = test_report_writing_guide_agent(graph, state)
 
     print("💬 저장된 메시지:")
     for i, msg in enumerate(state["messages"], 1):
