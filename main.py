@@ -11,6 +11,10 @@ from agents.exception_agent import invoke as exception_agent
 
 from langchain_core.runnables.config import RunnableConfig
 
+from dotenv import load_dotenv
+from vector_store.builder import ensure_vector_db_exists
+from vector_store.retrieval import test_vector_retrieval
+
 class AgentState(TypedDict):
     input_query: str
     thread_id: str
@@ -79,9 +83,22 @@ def create_supervisor_graph():
 
     return builder.compile()
 
+def create_reports_vector_db():
+    ensure_vector_db_exists("./vector_store/db/reports_chroma", "./vector_store/docs")
 
+    # 벡터 DB 검색 테스트
+    results = test_vector_retrieval(
+        query="스마트팜 프로젝트의 단계별 추진 체계와 책임자는 누구인가요?",
+        k=3,  # 상위 3개 결과 검색
+        db_path="./vector_store/db/reports_chroma"
+    )
+    print(results)
+    
 
-if __name__ == "__main__":
+def main():
+    load_dotenv()
+    create_reports_vector_db()
+
     graph = create_supervisor_graph()
 
     # 초기 상태 정의
@@ -118,3 +135,6 @@ def GetUserName():
     print("💬 저장된 메시지:")
     for i, msg in enumerate(state["messages"], 1):
         print(f"{i}. {msg}\n")
+
+if __name__ == "__main__":
+    main()
