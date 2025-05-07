@@ -67,3 +67,23 @@ List clearly which rules are violated, and suggest how the code should be correc
     )
 
     return chain.run({"code": code, "rules": rules_text})
+
+# LangGraph Supervisor용 함수
+def invoke(state: dict, config) -> dict:
+    code = state.get("code")
+
+    # thread_id 안전 접근
+    thread_id = (
+        getattr(config, "configurable", {}).get("thread_id")
+        if hasattr(config, "configurable")
+        else config.get("thread_id", "default")
+    )
+
+    feedback = check_code(code)
+
+    return {
+        "code": code,
+        "feedback": feedback,
+        "thread_id": thread_id,
+        "agent": "code_check"
+    }

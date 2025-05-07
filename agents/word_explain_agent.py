@@ -1,9 +1,11 @@
 import os
 import requests
 from dotenv import load_dotenv
-load_dotenv()
+from langchain_core.runnables import RunnableConfig
 from openai import OpenAI
 
+
+load_dotenv()
 client = OpenAI()
 
 def search_tavily(query: str, max_results: int = 3) -> list:
@@ -65,3 +67,21 @@ def explain_word(term: str) -> str:
     )
 
     return response.choices[0].message.content.strip()
+
+# LangGraph Supervisor용 함수
+def invoke(state: dict, config: RunnableConfig) -> dict:
+    term = state.get("term")
+    thread_id = (
+        getattr(config, "configurable", {}).get("thread_id")
+        if hasattr(config, "configurable")
+        else config.get("thread_id", "default")
+    )
+
+    explanation = explain_word(term)
+
+    return {
+        "term": term,
+        "explanation": explanation,
+        "thread_id": thread_id,
+        "agent": "word_explain"
+    }
