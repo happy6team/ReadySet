@@ -130,31 +130,9 @@ from agents.matching_agent import *
 #     for i, msg in enumerate(state["messages"], 1):
 #         print(f"{i}. {msg}\n")
 
+
 if __name__ == "__main__":
-    # 벡터 DB 확인 및 필요시 초기화
-    try:
-        vs = load_vectorstore()
-        all_docs = vs.get()
-        if len(all_docs['documents']) == 0:
-            print("벡터 DB가 비어 있습니다. 초기화를 실행합니다.")
-            initialize_employee_vectorstore()
-            vs = load_vectorstore()  # 다시 로드
-            all_docs = vs.get()
-    except Exception as e:
-        print(f"벡터 DB 로드 오류: {str(e)}. 초기화를 실행합니다.")
-        initialize_employee_vectorstore()
-        vs = load_vectorstore()  # 다시 로드
-        all_docs = vs.get()
-    
-    # 전체 데이터 개수 확인
-    print(f"전체 데이터 개수: {len(all_docs['documents'])}")
-    
-    # 첫 3개 데이터만 출력
-    for i in range(min(3, len(all_docs['documents']))):
-        print(f"\n--- 데이터 {i+1} ---")
-        print(all_docs['documents'][i])
-    
     # 매칭 테스트
-    test_query = "스마트팜 기술 교육은 누구한테 문의하면 되나요?"
+    test_query = "데이터 보안에 문제가 생겼습니다. 누구한테 문의하면 되나요?"
     result = match_person_for_query(test_query, "스마트팜 프로젝트")
-    print(test_query, result)
+    print(result)
