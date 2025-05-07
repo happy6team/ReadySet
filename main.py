@@ -131,6 +131,16 @@ def GetUserName():
         config=RunnableConfig(configurable={"thread_id": "thread-001"})
     )
 
+    # 3차: 코드 검수 테스트용으로 input 변경
+    state["input_query"] = """오늘 점심이 뭐야?
+"""
+    state = graph.invoke(
+        state,
+        config=RunnableConfig(configurable={"thread_id": "thread-001"})
+    )
+
+
+
     # 결과 출력
     print("💬 저장된 메시지:")
     for i, msg in enumerate(state["messages"], 1):
