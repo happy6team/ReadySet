@@ -14,20 +14,26 @@ def generate_fallback_response(message: str) -> str:
 
 보다 정확한 도움을 드릴 수 있도록, 질문을 다시 구체적으로 작성해주시겠어요?
 
-[입력된 질문: \"{message}\"]
+[입력된 질문: "{message}"]
 """.strip()
 
 def invoke(state: dict, config: RunnableConfig) -> dict:
-    message = state.get("message", "")
+    input_query = state.get("input_query", "")
     thread_id = (
         getattr(config, "configurable", {}).get("thread_id")
         if hasattr(config, "configurable")
         else config.get("thread_id", "default")
     )
-    response = generate_fallback_response(message)
+
+    fallback_answer = generate_fallback_response(input_query)
+
+    # ✅ messages 누적
+    new_messages = list(state.get("messages", []))
+    new_messages.append(f"❗ 예외 처리 결과:\n{fallback_answer}")
+
     return {
-        "message": message,
-        "fallback_answer": response,
-        "thread_id": thread_id,
-        "agent": "exception_agent"
+        **state,
+        "messages": new_messages,
+        "agent": "exception_agent",
+        "thread_id": thread_id
     }
