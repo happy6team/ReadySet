@@ -14,14 +14,7 @@ def test_vector_db():
     )
     print(results)
 
-def test_min_agent(graph: StateGraph, state: AgentState):
-    # 문서 검색 agent 테스트용
-    state["input_query"] = """스마트팜 프로젝트의 단계별 추진 체계와 책임자를 문서에서 찾아주세요."""
-    state = graph.invoke(
-        state,
-        config=RunnableConfig(configurable={"thread_id": "thread-001"})
-    )
-
+def pretty_print_result(state: AgentState):
     # 결과 예쁘게 출력
     print("\n=== 응답 결과 ===")
     for msg in state["messages"]:
@@ -39,6 +32,28 @@ def test_min_agent(graph: StateGraph, state: AgentState):
         elif "error" in msg:
             print("\n오류:")
             print(msg["error"])
+
+def test_find_report_agent(graph: StateGraph, state: AgentState):
+    # 문서 검색 agent 테스트용
+    state["input_query"] = """스마트팜 프로젝트의 단계별 추진 체계와 책임자를 문서에서 찾아주세요."""
+    state = graph.invoke(
+        state,
+        config=RunnableConfig(configurable={"thread_id": "thread-001"})
+    )
+
+    pretty_print_result(state)
+
+    return state
+
+def test_report_writing_guide_agent(graph: StateGraph, state: AgentState):
+    # 보고서 생성 가이드라인 제공 agent 테스트용
+    state["input_query"] = """회의록 작성 시 의결사항에 대해서는 어떻게 작성하는게 좋을까요?"""
+    state = graph.invoke(
+        state,
+        config=RunnableConfig(configurable={"thread_id": "thread-001"})
+    )
+
+    pretty_print_result(state)
 
     return state
 
