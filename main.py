@@ -13,7 +13,7 @@ from langchain_core.runnables.config import RunnableConfig
 
 from dotenv import load_dotenv
 from vector_store.builder import ensure_vector_db_exists
-from vector_store.retrieval import test_vector_retrieval
+from test_agent import test_ung_agent, test_vector_db
 
 class AgentState(TypedDict):
     input_query: str
@@ -42,7 +42,6 @@ router_prompt = PromptTemplate.from_template("""
 router_chain = router_prompt | ChatOpenAI(model="gpt-4o-mini") | StrOutputParser()
 
 # 라우팅 함수
-
 def route_agent(state: AgentState) -> Literal["word_explain", "code_check", "exception_agent"]:
     result = router_chain.invoke({"input_query": state["input_query"]}).strip().lower()
 
@@ -85,19 +84,11 @@ def create_supervisor_graph():
 
 def create_reports_vector_db():
     ensure_vector_db_exists("./vector_store/db/reports_chroma", "./vector_store/docs")
-
-    # 벡터 DB 검색 테스트
-    results = test_vector_retrieval(
-        query="스마트팜 프로젝트의 단계별 추진 체계와 책임자는 누구인가요?",
-        k=3,  # 상위 3개 결과 검색
-        db_path="./vector_store/db/reports_chroma"
-    )
-    print(results)
+    # test_vector_db()
     
-
 def main():
     load_dotenv()
-    create_reports_vector_db()
+    # create_reports_vector_db()
 
     graph = create_supervisor_graph()
 
@@ -110,36 +101,7 @@ def main():
         messages=[]
     )
 
-    # 1차: 용어 설명 테스트
-    state = graph.invoke(
-        state,
-        config=RunnableConfig(configurable={"thread_id": "thread-001"})
-    )
-
-    # 2차: 코드 검수 테스트용으로 input 변경
-    state["input_query"] = """
-class user_profile:
-    def __init__(self):
-        self.Name = "홍길동"
-
-def GetUserName():
-    return self.Name
-"""
-
-    state = graph.invoke(
-        state,
-        config=RunnableConfig(configurable={"thread_id": "thread-001"})
-    )
-
-    # 3차: 코드 검수 테스트용으로 input 변경
-    state["input_query"] = """오늘 점심이 뭐야?
-"""
-    state = graph.invoke(
-        state,
-        config=RunnableConfig(configurable={"thread_id": "thread-001"})
-    )
-
-
+    test_ung_agent(graph, state)
 
     # 결과 출력
     print("💬 저장된 메시지:")
