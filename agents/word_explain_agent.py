@@ -61,7 +61,7 @@ def explain_word(term: str) -> str:
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "당신은 친절하고 전문적인 한국어 멘토입니다."},
+            {"role": "system", "content": "당신은 친절하고 전문적인 차세대 한국형 스마트팜 개발 멘토입니다."},
             {"role": "user", "content": full_prompt}
         ]
     )
