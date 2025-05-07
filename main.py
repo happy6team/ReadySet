@@ -8,7 +8,8 @@
 # from agents.word_explain_agent import invoke as word_agent
 # from agents.code_check_agent import invoke as code_agent
 # from agents.exception_agent import invoke as exception_agent
-from agents.matching_agent import *
+# from agents.matching_agent import *
+from agents.email_agent import generate_email
 
 # from langchain_core.runnables.config import RunnableConfig
 
@@ -133,6 +134,9 @@ from agents.matching_agent import *
 
 if __name__ == "__main__":
     # 매칭 테스트
-    test_query = "데이터 보안에 문제가 생겼습니다. 누구한테 문의하면 되나요?"
-    result = match_person_for_query(test_query, "스마트팜 프로젝트")
-    print(result)
+    # test_query = "데이터 보안에 문제가 생겼습니다. 누구한테 문의하면 되나요?"
+    # result = match_person_for_query(test_query, "스마트팜 프로젝트")
+    # print(result)
+    # 실행 및 출력
+    print("\n📧 작성된 이메일:\n")
+    print(generate_email())
