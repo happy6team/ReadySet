@@ -3,9 +3,9 @@ from typing import List, Optional, Any
 
 class QueryRequest(BaseModel):
     input_query: str
-    thread_id: str
-    project_name: str
-    project_explain: str
+    # thread_id: str
+    # project_name: str
+    # project_explain: str
 
 class ReportSource(BaseModel):
     content: Optional[str] = None
