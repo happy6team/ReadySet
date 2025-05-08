@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from api.routers import chat
+from api.routers import meeting
 from dotenv import load_dotenv
 from graph import create_supervisor_graph
 from agent_state import AgentState
@@ -45,6 +46,7 @@ async def root():
     return {"message": "Welcome to the TeamFit FastAPI server!"}
 
 app.include_router(chat.router)
+app.include_router(meeting.router)
 
 if __name__ == "__main__":
     import uvicorn
