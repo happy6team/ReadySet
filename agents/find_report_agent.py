@@ -223,10 +223,13 @@ class FindReportAgent:
         # 응답 형식화
         response = self.format_agent_response(search_result)
         
+        new_messages = list(state.get("messages", []))
+        new_messages.extend(response["messages"])
+
         # 상태 업데이트
         return {
             **state,
-            "messages": response["messages"],
+            "messages": new_messages,
             "agent": "search_agent",
             "thread_id": thread_id,
             "raw_search_result": search_result  # 디버깅 및 고급 사용을 위해 원시 검색 결과 포함

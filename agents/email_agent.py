@@ -59,7 +59,7 @@ def invoke(state: dict, config) -> dict:
 
     # 이메일 생성 함수 호출
     generated_email = generate_email(email_input)  # self 제거하고 직접 함수 호출
-    print(f"생성된 이메일:\n{generated_email}")
+    # print(f"생성된 이메일:\n{generated_email}")
 
     # messages 누적
     new_messages = list(state.get("messages", []))  # 기존 메시지 유지

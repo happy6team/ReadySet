@@ -75,7 +75,7 @@ def invoke(state: dict, config) -> dict:
     )
 
     feedback = check_code(code)
-    print(feedback)
+    # print(feedback)
     # ✅ messages 누적
     new_messages = list(state.get("messages", []))  # 기존 메시지 유지
     new_messages.append(f"🧠 코드 검수 결과:\n{feedback}")
