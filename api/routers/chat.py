@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Optional
 from agent_state import AgentState
@@ -9,14 +9,10 @@ from ..schemas.chat_dto import QueryRequest, QueryResponse, Message
 router = APIRouter()
 
 @router.post("/chat", response_model=QueryResponse)
-async def execute_query(request: QueryRequest): 
+async def execute_query(request: QueryRequest, fastapi_request: Request): 
     try:
-        # Load environment variables
-        load_dotenv()
-        
-        # Create graph
-        graph = create_supervisor_graph()
-        
+        graph = fastapi_request.app.state.supervisor_graph
+
         # Create initial state
         state = AgentState(
             input_query=request.input_query,
@@ -26,10 +22,8 @@ async def execute_query(request: QueryRequest):
             messages=[]
         )
         
-        # Execute graph
         state = graph.invoke(state)
         
-        # Convert messages to response format
         messages = []
         for msg in state["messages"]:
             messages.append(Message(
