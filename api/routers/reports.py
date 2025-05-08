@@ -7,6 +7,7 @@ import pathlib
 import os
 
 router = APIRouter()
+ROOT_DIR = os.environ.get('PROJECT_ROOT_DIR', os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # 그동안 받았던 문서 목록 확인 api
 @router.get("/reports", response_model=ReportListResponse)
@@ -32,36 +33,41 @@ async def get_report_list( fastapi_request: Request):
 @router.post("/reports/download")
 async def download_report_file(fastapi_request: Request, source: str): 
     try:
-        # URL 디코딩 (URL에서 한글이나 특수문자가 인코딩되었을 경우)
+        # URL 디코딩
         decoded_source = unquote(source)
+        print("source", decoded_source)
         
-        # 상대 경로를 절대 경로로 변환
-        # 클라이언트가 "./vector_store/docs/..." 형식으로 보냈을 때 처리
+        # 상대 경로 처리
         if decoded_source.startswith("./"):
-            decoded_source = decoded_source[2:]  # './' 제거
-        # 프로젝트 루트 디렉토리 (필요에 따라 수정)
-        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        # 실제 파일 경로 생성
-        file_path = os.path.join(root_dir, decoded_source)
-        # 경로 정규화 및 보안 검사 (경로 주입 공격 방지)
+            decoded_source = decoded_source[2:]
+        
+        # 경로 구분자 표준화 (OS에 맞게 변환)
+        decoded_source = decoded_source.replace('\\', os.path.sep)
+        
+        # 경로 생성
+        file_path = os.path.join(ROOT_DIR, decoded_source)
         file_path = os.path.normpath(file_path)
-        root_path = os.path.normpath(root_dir)
-        # 파일이 root_dir 외부에 있는지 확인 (경로 주입 공격 방지)
-        if not file_path.startswith(root_path):
-            raise HTTPException(status_code=403, detail="접근이 허용되지 않은 파일입니다.")
         
-        # 파일 존재 여부 확인
+        print("final file_path", file_path)
+        
+        # 경로 검증 및 파일 존재 확인
         if not os.path.isfile(file_path):
-            raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
+            # 디버깅을 위한 추가 정보
+            dir_path = os.path.dirname(file_path)
+            if os.path.isdir(dir_path):
+                files_in_dir = os.listdir(dir_path)
+                print(f"Files in directory: {files_in_dir}")
+            else:
+                print(f"Directory does not exist: {dir_path}")
+            
+            raise HTTPException(status_code=404, detail=f"파일을 찾을 수 없습니다: {file_path}")
         
-        # 파일 이름 추출
+        # 파일 반환
         file_name = os.path.basename(file_path)
-        
-        # 파일 다운로드 응답 반환
         return FileResponse(
             path=file_path, 
             filename=file_name,
-            media_type='application/pdf'  # PDF 파일의 MIME 타입
+            media_type='application/pdf'
         )
 
     except Exception as e:
