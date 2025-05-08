@@ -8,6 +8,9 @@ from langchain_docling import DoclingLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+
 
 
 class VectorDatabaseBuilder:
@@ -215,6 +218,54 @@ class VectorDatabaseBuilder:
             traceback.print_exc()
             return None
 
+
+def build_code_rule_vector_db(
+    rule_file_path: str = "vector_store/docs/code_rules/coding_rules.txt",
+    db_path: str = "vector_store/db/code_rule_chroma"
+) -> Chroma:
+    """
+    코드 컨벤션 규칙 텍스트 기반 벡터 DB 생성
+
+    Args:
+        rule_file_path: 코드 규칙 텍스트 파일 경로
+        db_path: 저장 경로
+
+    Returns:
+        Chroma 객체
+    """
+    if not os.path.exists(rule_file_path):
+        raise FileNotFoundError(f"코드 규칙 파일이 존재하지 않습니다: {rule_file_path}")
+
+    with open(rule_file_path, "r", encoding="utf-8") as f:
+        raw_text = f.read()
+
+    chunks = [chunk.strip() for chunk in raw_text.split("\n\n") if chunk.strip()]
+    documents = [Document(page_content=chunk) for chunk in chunks]
+
+    embedding = OpenAIEmbeddings()
+    vectorstore = Chroma.from_documents(
+        documents=documents,
+        embedding=embedding,
+        persist_directory=db_path
+    )
+    vectorstore.persist()
+    print(f"✅ 코드 규칙 벡터 DB 저장 완료: {db_path}")
+    return vectorstore
+
+
+def ensure_code_rule_vector_db_exists():
+    """
+    코드 규칙용 벡터 DB가 없으면 생성
+    """
+    db_path = "vector_store/db/code_rule_chroma"
+    rule_file_path = "vector_store/docs/code_rules/coding_rules.txt"
+
+    if os.path.exists(db_path) and os.path.isdir(db_path) and len(os.listdir(db_path)) > 0:
+        print(f"✅ 코드 규칙 벡터 DB 이미 존재: {db_path}")
+        return
+
+    print("📦 코드 규칙 벡터 DB 생성 시작")
+    build_code_rule_vector_db(rule_file_path=rule_file_path, db_path=db_path)
 
 def ensure_vector_db_exists(db_path: str = "./vector_store/db", file_path: str="./docs"):
     # DB가 이미 존재하는지 확인

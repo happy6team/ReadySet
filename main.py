@@ -3,11 +3,15 @@ from graph import create_supervisor_graph
 
 from dotenv import load_dotenv
 from vector_store.builder import ensure_vector_db_exists
+from vector_store.builder import ensure_code_rule_vector_db_exists
+
 from test_agent import test_ung_agent, test_vector_db, test_find_report_agent, test_report_writing_guide_agent
 from agents.email_agent import generate_email
 
 def create_reports_vector_db():
     ensure_vector_db_exists("./vector_store/db/reports_chroma", "./vector_store/docs")
+    print("rule_vector_db 실행")
+    ensure_code_rule_vector_db_exists()
     # test_vector_db()
 
 def matching_test():
@@ -21,7 +25,7 @@ def matching_test():
     
 def main():
     load_dotenv()
-    # create_reports_vector_db()
+    create_reports_vector_db()
 
     graph = create_supervisor_graph()
 
@@ -34,8 +38,8 @@ def main():
         messages=[]
     )
 
-    # state = test_ung_agent(graph, state)
-    state = test_find_report_agent(graph, state)
+    state = test_ung_agent(graph, state)
+    # state = test_find_report_agent(graph, state)
     # state = test_report_writing_guide_agent(graph, state)
     
     # matching_test()
