@@ -5,6 +5,8 @@ from graph import create_supervisor_graph
 from agent_state import AgentState
 from typing import Dict, List, Any
 from api.utils.chat_history_utils import get_thread_messages, add_thread_messages, add_thread_query, get_thread_queries
+from fastapi.middleware.cors import CORSMiddleware
+
 
 # 애플리케이션 시작 시 환경 변수 로드 및 그래프 초기화
 load_dotenv()
@@ -26,6 +28,14 @@ thread_query_history: Dict[str, List[str]] = {} # thread_id, query list
 app = FastAPI(
     title="TeamFit API", 
     description="TeamFit Graph Execution API"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Vue dev 서버 주소
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # 그래프 객체와 history를 app.state에 저장하여 전역적으로 접근 가능하게 함
