@@ -9,7 +9,7 @@ from test_agent import test_ung_agent, test_vector_db, test_find_report_agent, t
 from agents.email_agent import generate_email
 
 def create_reports_vector_db():
-    ensure_vector_db_exists("./vector_store/db", "./vector_store/docs")
+    ensure_vector_db_exists("./vector_store/db/reports_chroma", "./vector_store/docs/report_docs")
     print("rule_vector_db 실행")
     ensure_code_rule_vector_db_exists()
     # test_vector_db()
@@ -39,9 +39,9 @@ def main():
     )
 
     # state = test_ung_agent(graph, state)
-    # state = test_find_report_agent(graph, state)
+    state = test_find_report_agent(graph, state)
     # state = test_report_writing_guide_agent(graph, state)
-    state = test_email_agent(graph, state)
+    # state = test_email_agent(graph, state)
     
     # matching_test()
 

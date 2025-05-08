@@ -272,7 +272,7 @@ def invoke(state: AgentState, config: RunnableConfig) -> AgentState:
         AgentState: 업데이트된 상태
     """
     # 기본 에이전트 생성
-    DB_PATH = "./vector_store/db"
+    DB_PATH = "./vector_store/db/reports_chroma"
     EMBEDDING_MODEL_NAME = "snunlp/KR-SBERT-V40K-klueNLI-augSTS"
     OPENAI_MODEL = "gpt-4o-mini"
     agent = create_search_agent(DB_PATH, EMBEDDING_MODEL_NAME, OPENAI_MODEL)
