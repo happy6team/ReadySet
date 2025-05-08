@@ -1,38 +1,71 @@
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
-# 환경변수 로드
-load_dotenv()
+class EmailAssistant:
+    """이메일 작성을 도와주는 에이전트 클래스"""
+    
+    def __init__(self, model_name="gpt-4o-mini", temperature=0):
+        """이메일 어시스턴트 초기화"""
+        # 환경변수 로드
+        load_dotenv()
+        
+        # LLM 모델 초기화
+        self.llm = ChatOpenAI(model=model_name, temperature=temperature)
+        
+    def get_user_input(self):
+        """사용자 입력 받기"""
+        return input(
+    "이메일 작성을 위한 내용을 반드시 입력해주세요.\n"
+    "이메일 목적, 받는 사람, 말투, 전하고 싶은 내용: "
+)
+    
+    def generate_email(self, email_input=None):
+        """이메일 생성 함수"""
+        # 입력이 없으면 사용자에게 요청
+        if email_input is None:
+            email_input = self.get_user_input()
+        
+        # 프롬프트 구성
+        prompt = f"""
+First, please extract the email purpose, recipient, tone, and main content from the user input below.
+If certain information is missing, assume the email purpose is 'request', the recipient is 'manager', and the tone is 'respectful'.
 
-# 전역에서 LLM 초기화
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+User input: {email_input}
 
-# 사용자 입력
-email_type = input("이메일 목적은 무엇인가요? ")
-recipient = input("받는 사람은 누구인가요? ")
-tone = input("어떤 말투를 원하나요? (예: 정중하게, 간결하게, 친근하게): ")
-main_content = input("전하고 싶은 내용을 입력해주세요: ")
+Based on the extracted information, please write an email for a new employee.
+Please write the email in the following format according to Korean corporate culture:
 
-# 이메일 생성 함수
-def generate_email() -> str:
-    prompt = f"""
-너는 신입사원을 위한 이메일 작성 보조 에이전트야. 아래 정보를 바탕으로 상황에 맞는 이메일을 작성해줘.
+Subject: (clearly indicating the email purpose, e.g.: [Request], [Report], [Notice], [Apology])
 
-이메일 목적: {email_type}
-받는 사람: {recipient}
-말투: {tone}
-주요 내용: {main_content}
+To: [extracted recipient name] 
 
-한국의 기업 문화에 맞춰 이메일을 다음 형식으로 작성해줘:
-1. 제목 (이메일 목적을 분명히 알 수 있게, 예: [요청], [보고], [안내], [사과])
-2. 인사말 (예: 안녕하세요, 김다은입니다)
-3. 본문 (간결하고 목적 위주로, 문장은 정중하면서도 실용적으로 작성. 핵심 목적을 먼저 밝힘 → 필요한 정보/배경 순서로 작성)
-4. 마무리 인사 (예: 감사합니다. 김다은 드림)
+Greeting: (e.g.: Hello, I am writing to request...)
 
-문장은 자연스럽고, 기업 문화에 맞는 형식으로 작성해줘.
+Body: (concise and purpose-oriented, with sentences that are respectful yet practical. Reveal the core purpose first → then provide necessary information/background)
+
+Closing remarks: (e.g.: Thank you for your consideration.)
+
+From: (Your name e.g.: Kim Da-eun)
+
+Please write the sentences naturally and in a format appropriate for corporate culture.
+
+IMPORTANT: 
+1. The recipient is the person mentioned in the user input (in this case: {email_input})
+2. The sender is assumed to be "me" (not the recipient)
+3. Please make sure to generate the final email in Korean language.
 """
 
-    response = llm.invoke(prompt)
-    return response.content
-
-
+        # LLM 호출 및 결과 반환
+        response = self.llm.invoke(prompt)
+        return response.content
+    
+    def run(self):
+        """에이전트 실행"""
+        # 이메일 생성
+        email_content = self.generate_email()
+        
+        # 결과 출력
+        print("\n===== 생성된 이메일 =====\n")
+        print(email_content)
+        
+        return email_content
