@@ -4,7 +4,7 @@ import os
 import json
 import requests
 from dotenv import load_dotenv
-from utils import load_model
+from .utils import load_model
 
 
 # .env에서 키 로드
