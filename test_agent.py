@@ -89,3 +89,12 @@ class user_profile:
 
     return state
 
+def test_email_agent(graph: StateGraph, state: AgentState):
+    # 보고서 생성 가이드라인 제공 agent 테스트용
+    state["input_query"] = """변경, 이재웅, 정중하게, 회의실 8층으로 변경"""
+    state = graph.invoke(
+        state,
+        config=RunnableConfig(configurable={"thread_id": "thread-001"})
+    )
+
+    pretty_print_result(state)
