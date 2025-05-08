@@ -4,7 +4,7 @@ import traceback
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from langchain_docling import DoclingLoader
+from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -76,7 +76,7 @@ class VectorDatabaseBuilder:
                 if not os.path.exists(file_path):
                     raise FileNotFoundError(f"파일을 찾을 수 없습니다: {file_path}")
                 
-                loader = DoclingLoader(file_path=file_path)
+                loader = PyMuPDFLoader(file_path=file_path)
                 docs = loader.load()
                 all_docs.extend(docs)
                 print(f"파일 '{os.path.basename(file_path)}' 로드 완료: {len(docs)}개 문서 조각")
@@ -104,9 +104,6 @@ class VectorDatabaseBuilder:
             # 각 문서 처리
             for i, doc in enumerate(docs):
                 # 문서 메타데이터에서 섹션 정보 추출
-                headings = doc.metadata.get("dl_meta", {}).get("headings", ["미분류 섹션"])
-                current_section = headings[0] if headings else "미분류 섹션"
-                
                 source_path = doc.metadata.get("source", "")
                 source_filename = os.path.basename(source_path) if source_path else "unknown"
                 
@@ -114,7 +111,7 @@ class VectorDatabaseBuilder:
                 metadata = {
                     "source": source_path,
                     "filename": source_filename,
-                    "section": current_section,
+                    "page": doc.metadata.get("page", 0),
                     "doc_index": i
                 }
                 
