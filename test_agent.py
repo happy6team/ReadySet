@@ -10,7 +10,7 @@ def test_vector_db():
     results = test_vector_retrieval(
         query="스마트팜 프로젝트의 단계별 추진 체계와 책임자는 누구인가요?",
         k=3,  # 상위 3개 결과 검색
-        db_path="./vector_store/db/reports_chroma"
+        db_path="./vector_store/db"
     )
     print(results)
 

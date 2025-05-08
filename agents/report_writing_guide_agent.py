@@ -15,7 +15,7 @@ class ReportWritingGuideAgent:
     
     def __init__(
         self,
-        db_path: str = "./vector_store/db/reports_chroma",
+        db_path: str = "./vector_store/db",
         embedding_model_name: str = "snunlp/KR-SBERT-V40K-klueNLI-augSTS",
         openai_model: str = "gpt-4o-mini",
         temperature: float = 0.1,
@@ -235,7 +235,7 @@ class ReportWritingGuideAgent:
 
 # 에이전트 인스턴스 생성 및 함수 형태로 노출
 def create_search_agent(
-    db_path: str = "./vector_store/db/reports_chroma",
+    db_path: str = "./vector_store/db",
     embedding_model_name: str = "snunlp/KR-SBERT-V40K-klueNLI-augSTS",
     openai_model: str = "gpt-4o-mini"
 ) -> Callable[[AgentState, RunnableConfig], AgentState]:
@@ -272,7 +272,7 @@ def invoke(state: AgentState, config: RunnableConfig) -> AgentState:
         AgentState: 업데이트된 상태
     """
     # 기본 에이전트 생성
-    DB_PATH = "./vector_store/db/reports_chroma"
+    DB_PATH = "./vector_store/db"
     EMBEDDING_MODEL_NAME = "snunlp/KR-SBERT-V40K-klueNLI-augSTS"
     OPENAI_MODEL = "gpt-4o-mini"
     agent = create_search_agent(DB_PATH, EMBEDDING_MODEL_NAME, OPENAI_MODEL)

@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional
 def test_vector_retrieval(
     query: str, 
     k: int = 2, 
-    db_path: str = "./vector_store/db/reports_chroma", 
+    db_path: str = "./vector_store/db", 
     embedding_model_name: str = "snunlp/KR-SBERT-V40K-klueNLI-augSTS"
 ) -> List[Dict[str, Any]]:
     """

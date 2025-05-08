@@ -7,7 +7,7 @@ from test_agent import test_ung_agent, test_vector_db, test_find_report_agent, t
 from agents.email_agent import generate_email
 
 def create_reports_vector_db():
-    ensure_vector_db_exists("./vector_store/db/reports_chroma", "./vector_store/docs")
+    ensure_vector_db_exists("./vector_store/db", "./vector_store/docs")
     # test_vector_db()
 
 def matching_test():
@@ -21,7 +21,7 @@ def matching_test():
     
 def main():
     load_dotenv()
-    # create_reports_vector_db()
+    create_reports_vector_db()
 
     graph = create_supervisor_graph()
 
