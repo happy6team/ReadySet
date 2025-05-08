@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, Request
-from ..schemas.meeting_dto import MeetingSummaryRequest
 import copy
 from meeting.text_summarizer import summarize_meeting_text
 

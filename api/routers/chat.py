@@ -1,23 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException,Form, Request
 from ..schemas.chat_dto import QueryRequest, QueryResponse, Message, ReportSource, map_to_message, ChatHistoryListResponse, ChatHistory
 import copy
 
 router = APIRouter()
 
 @router.post("/chat", response_model=QueryResponse)
-async def execute_query(request: QueryRequest, fastapi_request: Request): 
+async def execute_query( fastapi_request: Request, input_query: str = Form(...)): 
     try:
         graph = fastapi_request.app.state.supervisor_graph
         # 기본 AgentState의 복사본 생성 (깊은 복사)
         state = copy.deepcopy(fastapi_request.app.state.base_agent_state)
 
         # 요청 데이터로 상태 업데이트
-        state["input_query"] = request.input_query
+        state["input_query"] = input_query
         thread_id=state["thread_id"]
         state = graph.invoke(state)  # ✅ 여기에서 thread_id가 default로 바뀜!!!
 
         # 히스토리에 대화 내용 추가
-        fastapi_request.app.state.add_thread_query(fastapi_request.app, thread_id, request.input_query)
+        fastapi_request.app.state.add_thread_query(fastapi_request.app, thread_id, input_query)
         fastapi_request.app.state.add_thread_messages(fastapi_request.app, thread_id, state["messages"])
         
         messages = []
