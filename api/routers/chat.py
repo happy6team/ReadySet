@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse
 from urllib.parse import unquote
 import pathlib
 import os
+from .reports import download_file
 
 router = APIRouter()
 
@@ -38,38 +39,7 @@ async def execute_query( fastapi_request: Request, input_query: str = Form(...))
 @router.post("/chat/reports/download")
 async def download_report_file(fastapi_request: Request, source: str): 
     try:
-        # URL 디코딩
-        decoded_source = unquote(source)
-        
-        # 상대 경로 처리
-        if decoded_source.startswith("./"):
-            decoded_source = decoded_source[2:]
-        
-        # 경로 구분자 표준화 (OS에 맞게 변환)
-        decoded_source = decoded_source.replace('\\', os.path.sep)
-        
-        # 경로 생성
-        file_path = os.path.join(ROOT_DIR, decoded_source)
-        file_path = os.path.normpath(file_path)
-        
-        # 경로 검증 및 파일 존재 확인
-        if not os.path.isfile(file_path):
-            # 디버깅을 위한 추가 정보
-            dir_path = os.path.dirname(file_path)
-            if os.path.isdir(dir_path):
-                files_in_dir = os.listdir(dir_path)
-            else:
-                print(f"Directory does not exist: {dir_path}")
-            
-            raise HTTPException(status_code=404, detail=f"파일을 찾을 수 없습니다: {file_path}")
-        
-        # 파일 반환
-        file_name = os.path.basename(file_path)
-        return FileResponse(
-            path=file_path, 
-            filename=file_name,
-            media_type='application/pdf'
-        )
+        return download_file(source)
 
     except Exception as e:
         if isinstance(e, HTTPException):
