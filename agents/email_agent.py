@@ -1,32 +1,18 @@
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
-class EmailAssistant:
-    """이메일 작성을 도와주는 에이전트 클래스"""
+# 환경변수 로드
+load_dotenv()
+
+# 전역에서 LLM 초기화
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+# 이메일 생성 함수
+def generate_email(email_input: str) -> str:
+    """이메일 생성 함수"""
     
-    def __init__(self, model_name="gpt-4o-mini", temperature=0):
-        """이메일 어시스턴트 초기화"""
-        # 환경변수 로드
-        load_dotenv()
-        
-        # LLM 모델 초기화
-        self.llm = ChatOpenAI(model=model_name, temperature=temperature)
-        
-    def get_user_input(self):
-        """사용자 입력 받기"""
-        return input(
-    "이메일 작성을 위한 내용을 반드시 입력해주세요.\n"
-    "이메일 목적, 받는 사람, 말투, 전하고 싶은 내용: "
-)
-    
-    def generate_email(self, email_input=None):
-        """이메일 생성 함수"""
-        # 입력이 없으면 사용자에게 요청
-        if email_input is None:
-            email_input = self.get_user_input()
-        
-        # 프롬프트 구성
-        prompt = f"""
+    # 프롬프트 구성
+    prompt = f"""
 First, please extract the email purpose, recipient, tone, and main content from the user input below.
 If certain information is missing, assume the email purpose is 'request', the recipient is 'manager', and the tone is 'respectful'.
 
@@ -54,18 +40,47 @@ IMPORTANT:
 2. The sender is assumed to be "me" (not the recipient)
 3. Please make sure to generate the final email in Korean language.
 """
+    response = llm.invoke(prompt)
+    return response.content
 
-        # LLM 호출 및 결과 반환
-        response = self.llm.invoke(prompt)
-        return response.content
+
+# LangGraph Supervisor용 invoke 함수 
+def invoke(state: dict, config) -> dict:
+    """LangGraph Supervisor용 invoke 함수"""
+    # 입력 쿼리 가져오기
+    email_input = state.get("input_query", "")
+
+    # 설정에서 thread_id 가져오기
+    thread_id = (
+        getattr(config, "configurable", {}).get("thread_id")
+        if hasattr(config, "configurable")
+        else config.get("thread_id", "default")
+    )
+
+    # 이메일 생성 함수 호출
+    generated_email = generate_email(email_input)  # self 제거하고 직접 함수 호출
+    print(f"생성된 이메일:\n{generated_email}")
+
+    # messages 누적
+    new_messages = list(state.get("messages", []))  # 기존 메시지 유지
+    new_messages.append(f"📧 생성된 이메일:\n{generated_email}")
+
+    return {
+        **state,
+        "messages": new_messages,
+        "thread_id": thread_id,
+        "generated_email": generated_email  # 생성된 이메일 추가
+    }
+
+
+# 실행 예시 (main 부분)
+if __name__ == "__main__":
+    # 사용자 입력
+    user_input = input("이메일 목적, 받는사람, 말투, 전하고 싶은 내용을 입력해주세요: ")
     
-    def run(self):
-        """에이전트 실행"""
-        # 이메일 생성
-        email_content = self.generate_email()
-        
-        # 결과 출력
-        print("\n===== 생성된 이메일 =====\n")
-        print(email_content)
-        
-        return email_content
+    # 이메일 생성
+    email = generate_email(user_input)
+    
+    # 결과 출력
+    print("\n===== 생성된 이메일 =====\n")
+    print(email)
