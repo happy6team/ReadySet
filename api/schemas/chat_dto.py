@@ -7,8 +7,16 @@ class QueryRequest(BaseModel):
     project_name: str
     project_explain: str
 
+class ReportSource(BaseModel):
+    content: Optional[str] = None
+    section: Optional[str] = None
+    source: Optional[str] = None
+    filename: Optional[str] = None
+    rank: Optional[int] = None
+
 class Message(BaseModel):
     content: str
+    sources: Optional[List[ReportSource]] = None
     type: str
 
 class QueryResponse(BaseModel):
