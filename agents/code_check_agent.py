@@ -10,34 +10,12 @@ import os
 # 최초 실행 시 벡터DB 생성 (없으면)
 ensure_code_rule_vector_db_exists()
 
-# #  VectorDB 초기화 함수 (최초 1회 실행용)
-# def initialize_code_rule_vectorstore():
-#     rules_file_path = "vector_store/docs/code_rules/coding_rules.txt"
-#     with open(rules_file_path, "r", encoding="utf-8") as f:
-#         raw_rules = f.read()
+embedding_model = OpenAIEmbeddings()
+global_vectorstore = Chroma(
+    embedding_function=OpenAIEmbeddings(),
+    persist_directory="vector_store/db/code_rule_chroma"
+)
 
-#     rules_chunks = [chunk.strip() for chunk in raw_rules.split("\n\n") if chunk.strip()]
-#     documents = [Document(page_content=chunk) for chunk in rules_chunks]
-#     embedding_model = OpenAIEmbeddings()
-#     persist_path = "vector_store/code_rule_chroma"
-
-#     vectorstore = Chroma.from_documents(
-#         documents=documents,
-#         embedding=embedding_model,
-#         persist_directory=persist_path
-#     )
-#     vectorstore.persist()
-#     print(f" 코드 규칙 DB 저장 완료: {persist_path}")
-#     return vectorstore
-
-# VectorStore 로딩 함수
-def load_vectorstore():
-    embedding = OpenAIEmbeddings()
-    return Chroma(
-        embedding_function=embedding,
-        persist_directory="vector_store/db/code_rule_chroma"
-    )
- 
 # 코드 검수 LLM 체인 (최신 방식)
 llm = ChatOpenAI(model="gpt-4o-mini")
 prompt = PromptTemplate(
@@ -60,10 +38,10 @@ code_review_chain = prompt | llm
 
 # 코드 검수 실행 함수
 def check_code(code: str) -> str:
-    vs = load_vectorstore()
-    related_rules = vs.similarity_search(code, k=3)
+    related_rules = global_vectorstore.similarity_search(code, k=3)
     rules_text = "\n\n".join([doc.page_content for doc in related_rules])
     return code_review_chain.invoke({"code": code, "rules": rules_text})
+
 
 # LangGraph Supervisor용 invoke 함수
 def invoke(state: dict, config) -> dict:
