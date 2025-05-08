@@ -134,7 +134,7 @@ def invoke(state: dict, config) -> dict:
 
     # 담당자 매칭 함수 호출
     result = match_person_for_query(query, project_name)
-    print(f"담당자 매칭 결과:\n{result}")
+    # print(f"담당자 매칭 결과:\n{result}")
 
     # messages 누적
     new_messages = list(state.get("messages", []))  # 기존 메시지 유지

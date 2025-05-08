@@ -58,36 +58,32 @@ def test_report_writing_guide_agent(graph: StateGraph, state: AgentState):
     return state
 
 def test_ung_agent(graph: StateGraph, state: AgentState):
-    # 1차: 용어 설명 테스트
-    state = graph.invoke(
-        state,
-        config=RunnableConfig(configurable={"thread_id": "thread-001"})
-    )
-
-    # 2차: 코드 검수 테스트용으로 input 변경
-    state["input_query"] = """
+    test_cases = [
+        "PLC란 무엇인가요?",  # word_explain_agent
+        """
 class user_profile:
     def __init__(self):
         self.Name = "홍길동"
-
+        
 # def GetUserName():
 #     return self.Name
-# """
+""",  # code_check_agent
+        "김민주 매니저님에게 협조 요청 메일 보내고 싶어요",  # email_agent
+        "MES 연동 관련 문의는 누구한테 하면 되나요?",  # matching_agent
+        "이전 분기가공 품질 분석 보고서 보여줘",  # find_report_agent
+        "이번 공정 개선 보고서의 '이슈 요약' 항목 어떻게 써야 할까요?",  # report_writing_guide_agent
+        "오늘 점심 뭐 먹지?"  # exception_agent
+    ]
 
-    state = graph.invoke(
-        state,
-        config=RunnableConfig(configurable={"thread_id": "thread-001"})
-    )
-
-    # 3차: 코드 검수 테스트용으로 input 변경
-    state["input_query"] = """오늘 점심이 뭐야?
-"""
-    state = graph.invoke(
-        state,
-        config=RunnableConfig(configurable={"thread_id": "thread-001"})
-    )
+    for query in test_cases:
+        state["input_query"] = query
+        state = graph.invoke(
+            state,
+            config=RunnableConfig(configurable={"thread_id": state["thread_id"]})
+        )
 
     return state
+
 
 def test_email_agent(graph: StateGraph, state: AgentState):
     # 보고서 생성 가이드라인 제공 agent 테스트용

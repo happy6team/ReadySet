@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from openai import OpenAI
+from agent_state import AgentState
 
 load_dotenv()
 client = OpenAI()
@@ -78,11 +79,12 @@ def invoke(state: dict, config: RunnableConfig) -> dict:
     explanation = explain_word(term, project_name, project_explain)
 
     # ✅ messages 누적
-    new_messages = list(state.get("messages", []))  # 기존 메시지 유지
-    new_messages.append(f"📘 용어 설명 결과:\n{explanation}")
-    print(new_messages)
+    messages = list(state.get("messages", []))
+    messages.append(f"📕 용어 설명 결과:\n{explanation}")
+
+    # ✅ 전체 상태 복사 + 갱신
     return {
         **state,
-        "messages": new_messages,
+        "messages": messages,
         "thread_id": thread_id
     }

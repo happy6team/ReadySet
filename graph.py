@@ -1,4 +1,5 @@
 from typing import Literal, Optional, TypedDict, List
+from copy import deepcopy
 from langgraph.graph import StateGraph, END
 from langchain_core.runnables import RunnableConfig
 from langchain_core.output_parsers import StrOutputParser
@@ -7,12 +8,15 @@ from langchain_openai import ChatOpenAI
 
 from agents.word_explain_agent import invoke as word_agent
 from agents.code_check_agent import invoke as code_agent
+from agents.email_agent import invoke as email_agent
+from agents.matching_agent import invoke as matching_agent 
 from agents.exception_agent import invoke as exception_agent
 from agents.find_report_agent import invoke as find_report_agent
 from agents.report_writing_guide_agent import invoke as report_writing_guide_agent
+
 from agent_state import AgentState
 
-from langchain_core.runnables.config import RunnableConfig
+
 
 # 라우팅 프롬프트 체인 정의
 router_prompt = PromptTemplate.from_template("""
@@ -23,7 +27,9 @@ router_prompt = PromptTemplate.from_template("""
 2. code_check: 사용자가 작성한 코드에 대해 규칙 검토
 3. find_report_agent: 사용자 질의 내용이 문서나 보고서를 찾아달라고 하는 것 같을때
 4. report_writing_guide_agent: 사용자 질의 내용이 문서나 보고서 작성에 대해 도움을 요청하는 것 같을때
-5. exception_agent: 어떤 기능에도 해당하지 않음
+5. email_agent: 이메일 작성 요청
+6. matching_agent: 특정 담당자를 묻는 질문
+7. exception_agent: 위 항목들에 해당하지 않음
 
 사용자가 입력한 내용이 코드처럼 보이면 'code_check'로 판단하세요.
 
@@ -36,12 +42,16 @@ router_prompt = PromptTemplate.from_template("""
 router_chain = router_prompt | ChatOpenAI(model="gpt-4o-mini") | StrOutputParser()
 
 # 라우팅 함수
-def route_agent(state: AgentState) -> Literal["word_explain", "code_check", "find_report_agent", "report_writing_guide_agent", "exception_agent"]:
+def route_agent(state: AgentState) -> Literal[
+    "word_explain", "code_check", "find_report_agent",
+    "report_writing_guide_agent", "email_agent", "matching_agent", "exception_agent"
+]:
     result = router_chain.invoke({"input_query": state["input_query"]}).strip().lower()
-
-    print(f"🧭 라우팅 결과: {result}")  # 🔍 Debug 출력
-
-    if result in {"word_explain", "code_check", "find_report_agent", "report_writing_guide_agent"}:
+    print(f"🧭 라우팅 결과: {result}")
+    if result in {
+        "word_explain", "code_check", "find_report_agent",
+        "report_writing_guide_agent", "email_agent", "matching_agent"
+    }:
         return result
     return "exception_agent"
 
@@ -56,11 +66,7 @@ def create_supervisor_graph():
         def wrapper(state: AgentState, config: RunnableConfig) -> AgentState:
             result = agent_func(state, config)
             new_state = deepcopy(state)
-
-             # 기존 메시지 유지하고 병합만 수행
-            new_state = state.copy()
-            new_state["messages"] = result.get("messages", state.get("messages", []))
-
+            new_state.update(result)
             return new_state
         return wrapper
 
@@ -68,6 +74,8 @@ def create_supervisor_graph():
     builder.add_node("code_check", wrap_agent(code_agent))
     builder.add_node("find_report_agent", wrap_agent(find_report_agent))
     builder.add_node("report_writing_guide_agent", wrap_agent(report_writing_guide_agent))
+    builder.add_node("email_agent", wrap_agent(email_agent))  
+    builder.add_node("matching_agent", wrap_agent(matching_agent)) 
     builder.add_node("exception_agent", wrap_agent(exception_agent))
 
     builder.set_conditional_entry_point(route_agent)
@@ -76,6 +84,8 @@ def create_supervisor_graph():
     builder.add_edge("code_check", END)
     builder.add_edge("find_report_agent", END)
     builder.add_edge("report_writing_guide_agent", END)
+    builder.add_edge("email_agent", END) 
+    builder.add_edge("matching_agent", END)  
     builder.add_edge("exception_agent", END)
 
     return builder.compile()
