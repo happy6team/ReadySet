@@ -57,32 +57,42 @@ def test_report_writing_guide_agent(graph: StateGraph, state: AgentState):
 
     return state
 
+import time
+
 def test_ung_agent(graph: StateGraph, state: AgentState):
     test_cases = [
-        "PLC란 무엇인가요?",  # word_explain_agent
-        """
+        ("PLC란 무엇인가요?", "word_explain_agent"),
+        ("""
 class user_profile:
     def __init__(self):
         self.Name = "홍길동"
         
 # def GetUserName():
 #     return self.Name
-""",  # code_check_agent
-        "김민주 매니저님에게 협조 요청 메일 보내고 싶어요",  # email_agent
-        "MES 연동 관련 문의는 누구한테 하면 되나요?",  # matching_agent
-        "이전 분기가공 품질 분석 보고서 보여줘",  # find_report_agent
-        "이번 공정 개선 보고서의 '이슈 요약' 항목 어떻게 써야 할까요?",  # report_writing_guide_agent
-        "오늘 점심 뭐 먹지?"  # exception_agent
+""", "code_check_agent"),
+        ("김민주 매니저님에게 협조 요청 메일 보내고 싶어요", "email_agent"),
+        ("MES 연동 관련 문의는 누구한테 하면 되나요?", "matching_agent"),
+        ("이전 분기가공 품질 분석 보고서 보여줘", "find_report_agent"),
+        ("이번 공정 개선 보고서의 '이슈 요약' 항목 어떻게 써야 할까요?", "report_writing_guide_agent"),
+        ("오늘 점심 뭐 먹지?", "exception_agent")
     ]
 
-    for query in test_cases:
+    print("\n===== ⏱ Agent별 처리 시간 측정 결과 =====")
+
+    for query, agent_name in test_cases:
         state["input_query"] = query
+
+        start = time.perf_counter()
         state = graph.invoke(
             state,
             config=RunnableConfig(configurable={"thread_id": state["thread_id"]})
         )
+        end = time.perf_counter()
+
+        print(f"{agent_name.ljust(28)} → {end - start:.2f}초")
 
     return state
+
 
 
 def test_email_agent(graph: StateGraph, state: AgentState):

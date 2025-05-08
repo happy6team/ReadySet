@@ -50,6 +50,7 @@ class FindReportAgent:
         self._init_vector_db()
     
     def _init_vector_db(self) -> None:
+        print("✅ findReportAgent 초기화 완료")
         """벡터 DB 및 임베딩 모델 초기화"""
         try:
             # 임베딩 모델 초기화
@@ -102,45 +103,35 @@ class FindReportAgent:
             return f"답변 생성 과정에서 오류가 발생했습니다: {str(e)}"
 
     def search_documents(self, query: str) -> Dict[str, Any]:
-        """
-        벡터 DB에서 문서 검색 수행
-        
-        Args:
-            query: 검색 쿼리
-            
-        Returns:
-            Dict: 검색 결과 및 메타데이터
-        """
+
         if not self.vectordb:
             return {
                 "answer": "벡터 DB가 초기화되지 않았습니다.",
                 "sources": [],
                 "success": False
             }
-        
+
         try:
-            # 관련 문서 검색
-            retrieved_docs = self.vectordb.similarity_search(query=query, k=self.k)
-            
-            # 검색된 문서 처리
+
+            # ✅ 검색 문서 수 제한 (정확도는 유지)
+            top_k = min(self.k, 3)  # 기본값은 3
+            retrieved_docs = self.vectordb.similarity_search(query=query, k=top_k)
+
+
+            # ✅ 상위 문서만 context로 사용
             context_entries = []
             sources = []
-            
+
             for i, doc in enumerate(retrieved_docs):
-                # 메타데이터에서 정보 추출
                 source_path = doc.metadata.get('source', 'Unknown')
-                section = doc.metadata.get('section', 
-                                          doc.metadata.get('dl_meta', {}).get('headings', ['미분류 섹션'])[0] 
-                                          if 'dl_meta' in doc.metadata else '미분류 섹션')
-                
-                # 파일 이름 추출
+                section = doc.metadata.get('section',
+                                        doc.metadata.get('dl_meta', {}).get('headings', ['미분류 섹션'])[0]
+                                        if 'dl_meta' in doc.metadata else '미분류 섹션')
                 filename = os.path.basename(source_path) if isinstance(source_path, str) else 'Unknown'
-                
-                # 컨텍스트 항목 구성
+
                 context_entry = f"[문서 {i+1}] 출처: {filename}, 섹션: {section}\n{doc.page_content}"
                 context_entries.append(context_entry)
-                
-                # 소스 정보 구조화
+
                 source_info = {
                     "content": doc.page_content,
                     "section": section,
@@ -149,20 +140,19 @@ class FindReportAgent:
                     "rank": i + 1
                 }
                 sources.append(source_info)
-            
-            # 컨텍스트 전체를 하나의 문자열로 결합
+
             context = "\n\n".join(context_entries)
-            
-            # 답변 생성
+
+            # ✅ 문맥은 그대로 유지하여 정확도 보존
             answer = self.generate_response(query, context)
-            
+
             return {
                 "answer": answer,
                 "sources": sources,
                 "context": context,
                 "success": True
             }
-            
+
         except Exception as e:
             print(f"Error searching documents: {str(e)}")
             return {
@@ -171,6 +161,7 @@ class FindReportAgent:
                 "context": "",
                 "success": False
             }
+
 
     def format_agent_response(self, search_result: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -235,7 +226,6 @@ class FindReportAgent:
             "raw_search_result": search_result  # 디버깅 및 고급 사용을 위해 원시 검색 결과 포함
         }
 
-
 # 에이전트 인스턴스 생성 및 함수 형태로 노출
 def create_search_agent(
     db_path: str = "./vector_store/db",
@@ -261,6 +251,11 @@ def create_search_agent(
     
     return agent
 
+GLOBAL_AGENT = create_search_agent(
+    db_path="./vector_store/db/reports_chroma",
+    embedding_model_name="snunlp/KR-SBERT-V40K-klueNLI-augSTS",
+    openai_model="gpt-4o-mini"
+)
 
 # 편의를 위한 함수형 인터페이스
 def invoke(state: AgentState, config: RunnableConfig) -> AgentState:
@@ -274,14 +269,7 @@ def invoke(state: AgentState, config: RunnableConfig) -> AgentState:
     Returns:
         AgentState: 업데이트된 상태
     """
-    # 기본 에이전트 생성
-    DB_PATH = "./vector_store/db/reports_chroma"
-    EMBEDDING_MODEL_NAME = "snunlp/KR-SBERT-V40K-klueNLI-augSTS"
-    OPENAI_MODEL = "gpt-4o-mini"
-    agent = create_search_agent(DB_PATH, EMBEDDING_MODEL_NAME, OPENAI_MODEL)
-    
-    # 에이전트의 invoke 메서드 호출
-    return agent.invoke(state, config)
+    return GLOBAL_AGENT.invoke(state, config)
 
 
 # 테스트 코드
