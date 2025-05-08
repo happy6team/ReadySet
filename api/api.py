@@ -20,8 +20,8 @@ base_agent_state = AgentState(
 )
 
 # 쓰레드별 히스토리 저장소 초기화
-thread_message_history: Dict[str, List[Any]] = {}
-thread_query_history: Dict[str, List[str]] = {}
+thread_message_history: Dict[str, List[List[Any]]] = {} # thread_id, message list
+thread_query_history: Dict[str, List[str]] = {} # thread_id, query list
 
 app = FastAPI(
     title="TeamFit API", 

@@ -22,6 +22,13 @@ class Message(BaseModel):
 class QueryResponse(BaseModel):
     messages: List[Message]
 
+class ChatHistory(BaseModel):
+    query: str
+    messages: List[Message]
+
+class ChatHistoryListResponse(BaseModel):
+    histories: List[ChatHistory]
+
 def map_to_message(msg: Any) -> Message:
     """
     에이전트 메시지를 DTO Message 객체로 변환하는 매퍼 함수
@@ -59,4 +66,3 @@ def map_to_message(msg: Any) -> Message:
         type=msg_type,
         sources=sources
     )
-    
