@@ -6,7 +6,7 @@ cd TeamFit
    
 2. 가상환경 생성   
 python -m venv venv   
-source venv/bin/activate  // # Windows는 venv\Scripts\activate   
+source venv/bin/activate  // # Windows는 venv\Scripts\activate.bat 
    
 3. 패키지 설치   
 pip install -r requirements.txt

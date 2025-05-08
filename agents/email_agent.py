@@ -7,32 +7,80 @@ load_dotenv()
 # 전역에서 LLM 초기화
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-# 사용자 입력
-email_type = input("이메일 목적은 무엇인가요? ")
-recipient = input("받는 사람은 누구인가요? ")
-tone = input("어떤 말투를 원하나요? (예: 정중하게, 간결하게, 친근하게): ")
-main_content = input("전하고 싶은 내용을 입력해주세요: ")
-
 # 이메일 생성 함수
-def generate_email() -> str:
+def generate_email(email_input: str) -> str:
+    """이메일 생성 함수"""
+    
+    # 프롬프트 구성
     prompt = f"""
-너는 신입사원을 위한 이메일 작성 보조 에이전트야. 아래 정보를 바탕으로 상황에 맞는 이메일을 작성해줘.
+First, please extract the email purpose, recipient, tone, and main content from the user input below.
+If certain information is missing, assume the email purpose is 'request', the recipient is 'manager', and the tone is 'respectful'.
 
-이메일 목적: {email_type}
-받는 사람: {recipient}
-말투: {tone}
-주요 내용: {main_content}
+User input: {email_input}
 
-한국의 기업 문화에 맞춰 이메일을 다음 형식으로 작성해줘:
-1. 제목 (이메일 목적을 분명히 알 수 있게, 예: [요청], [보고], [안내], [사과])
-2. 인사말 (예: 안녕하세요, 김다은입니다)
-3. 본문 (간결하고 목적 위주로, 문장은 정중하면서도 실용적으로 작성. 핵심 목적을 먼저 밝힘 → 필요한 정보/배경 순서로 작성)
-4. 마무리 인사 (예: 감사합니다. 김다은 드림)
+Based on the extracted information, please write an email for a new employee.
+Please write the email in the following format according to Korean corporate culture:
 
-문장은 자연스럽고, 기업 문화에 맞는 형식으로 작성해줘.
+Subject: (clearly indicating the email purpose, e.g.: [Request], [Report], [Notice], [Apology])
+
+To: [extracted recipient name] 
+
+Greeting: (e.g.: Hello, I am writing to request...)
+
+Body: (concise and purpose-oriented, with sentences that are respectful yet practical. Reveal the core purpose first → then provide necessary information/background)
+
+Closing remarks: (e.g.: Thank you for your consideration.)
+
+From: (Your name e.g.: Kim Da-eun)
+
+Please write the sentences naturally and in a format appropriate for corporate culture.
+
+IMPORTANT: 
+1. The recipient is the person mentioned in the user input (in this case: {email_input})
+2. The sender is assumed to be "me" (not the recipient)
+3. Please make sure to generate the final email in Korean language.
 """
-
     response = llm.invoke(prompt)
     return response.content
 
 
+# LangGraph Supervisor용 invoke 함수 
+def invoke(state: dict, config) -> dict:
+    """LangGraph Supervisor용 invoke 함수"""
+    # 입력 쿼리 가져오기
+    email_input = state.get("input_query", "")
+
+    # 설정에서 thread_id 가져오기
+    thread_id = (
+        getattr(config, "configurable", {}).get("thread_id")
+        if hasattr(config, "configurable")
+        else config.get("thread_id", "default")
+    )
+
+    # 이메일 생성 함수 호출
+    generated_email = generate_email(email_input)  # self 제거하고 직접 함수 호출
+    print(f"생성된 이메일:\n{generated_email}")
+
+    # messages 누적
+    new_messages = list(state.get("messages", []))  # 기존 메시지 유지
+    new_messages.append(f"📧 생성된 이메일:\n{generated_email}")
+
+    return {
+        **state,
+        "messages": new_messages,
+        "thread_id": thread_id,
+        "generated_email": generated_email  # 생성된 이메일 추가
+    }
+
+
+# 실행 예시 (main 부분)
+if __name__ == "__main__":
+    # 사용자 입력
+    user_input = input("이메일 목적, 받는사람, 말투, 전하고 싶은 내용을 입력해주세요: ")
+    
+    # 이메일 생성
+    email = generate_email(user_input)
+    
+    # 결과 출력
+    print("\n===== 생성된 이메일 =====\n")
+    print(email)
