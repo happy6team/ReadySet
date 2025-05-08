@@ -35,7 +35,6 @@ async def download_report_file(fastapi_request: Request, source: str):
     try:
         # URL 디코딩
         decoded_source = unquote(source)
-        print("source", decoded_source)
         
         # 상대 경로 처리
         if decoded_source.startswith("./"):
@@ -48,15 +47,12 @@ async def download_report_file(fastapi_request: Request, source: str):
         file_path = os.path.join(ROOT_DIR, decoded_source)
         file_path = os.path.normpath(file_path)
         
-        print("final file_path", file_path)
-        
         # 경로 검증 및 파일 존재 확인
         if not os.path.isfile(file_path):
             # 디버깅을 위한 추가 정보
             dir_path = os.path.dirname(file_path)
             if os.path.isdir(dir_path):
                 files_in_dir = os.listdir(dir_path)
-                print(f"Files in directory: {files_in_dir}")
             else:
                 print(f"Directory does not exist: {dir_path}")
             
