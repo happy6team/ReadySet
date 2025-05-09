@@ -82,10 +82,10 @@ async def summarize_audio(file_id: str):
             api.api_get()
             print("🔁 재요청 중...")
 
-        print("✅ 텍텍텍스트 변환 완료:")
+        print("✅ 텍스트 변환 완료:")
         print(api.voice_data)
 
-        print("🧠 요요약 중...")
+        print("🧠 요약 중...")
         # api.summary_inference()
         print("여기서 제공하는 요약 건너뜀")
 
