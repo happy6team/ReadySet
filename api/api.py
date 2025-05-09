@@ -28,9 +28,8 @@ thread_message_history: Dict[str, List[List[Any]]] = {} # thread_id, message lis
 thread_query_history: Dict[str, List[str]] = {} # thread_id, query list
 
 app = FastAPI(
-    title="TeamFit API", 
-    description="TeamFit Graph Execution API",
-    tags=["welcome"]
+    title="ReadySet API", 
+    description="신입 개발자의 빠른 실무 투입을 돕는 AI 기반 멘토링 플랫폼 ReadySet🍀의 API 명세서입니다.",
 )
 
 app.add_middleware(
@@ -55,7 +54,7 @@ app.state.get_thread_queries = get_thread_queries
 
 @app.get("/")
 async def welcome():
-    return {"message": "Welcome to the TeamFit FastAPI server!"}
+    return {"message": "Welcome to the ReadySet FastAPI server!"}
 
 app.include_router(chat.router)
 app.include_router(meeting.router)
