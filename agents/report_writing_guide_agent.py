@@ -95,7 +95,10 @@ class ReportWritingGuideAgent:
                 model=self.openai_model,
                 temperature=self.temperature,
                 messages=[
-                    {"role": "system", "content": "당신은 보고서 작성 전문가입니다. 관련 문서 내용을 바탕으로 사용자를 위한 보고서 작성 가이드라인을 답변해주세요."},
+                    {"role": "system", "content": "You are a report-writing expert. Based on the provided related documents, "
+    "answer the user's query with a clear, structured guideline.\n"
+    "Use **bold** for section titles and insert line breaks (`\\n`) between sections for readability.\n"
+    "Return the result in **Korean** using markdown-friendly formatting."},
                     {"role": "user", "content": f"질문: {query}\n\n관련 문서:\n{context}"}
                 ]
             )
