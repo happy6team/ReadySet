@@ -102,51 +102,52 @@ class RtzrAPI:
             )
             
     def summary_inference(self) -> None:
+        pass
         """
         KoBART 요약 모델을 사용해 voice_data 텍스트를 요약합니다.
         """
-        if not self.voice_data or len(self.voice_data) < 40:
-            self.summary_data = "Text too short!"
-            return
+        # if not self.voice_data or len(self.voice_data) < 40:
+        #     self.summary_data = "Text too short!"
+        #     return
 
-        model, tokenizer = load_model()
+        # model, tokenizer = load_model()
 
-        # 입력 인코딩
-        inputs = tokenizer(
-            self.voice_data,
-            return_tensors="pt",
-            padding="max_length",
-            truncation=True,
-            max_length=1026,
-        )
-        input_length = len(self.voice_data)
+        # # 입력 인코딩
+        # inputs = tokenizer(
+        #     self.voice_data,
+        #     return_tensors="pt",
+        #     padding="max_length",
+        #     truncation=True,
+        #     max_length=1026,
+        # )
+        # input_length = len(self.voice_data)
 
-        # 동적으로 길이 조정
-        if input_length < 300:
-            max_len = 200
-            min_len = 50
-        elif input_length < 1000:
-            max_len = 400
-            min_len = 80
-        else:
-            max_len = 600
-            min_len = 100
-
-
-        # 요약 생성
-        summary_ids = model.generate(
-            input_ids=inputs["input_ids"],
-            attention_mask=inputs["attention_mask"],
-            max_length=max_len,
-            min_length=min_len,
-            num_beams=4,
-            repetition_penalty=1.3,
-            no_repeat_ngram_size=5,
-            length_penalty=1.0,
-            bos_token_id=model.config.bos_token_id,
-            eos_token_id=model.config.eos_token_id,
-        )
+        # # 동적으로 길이 조정
+        # if input_length < 300:
+        #     max_len = 200
+        #     min_len = 50
+        # elif input_length < 1000:
+        #     max_len = 400
+        #     min_len = 80
+        # else:
+        #     max_len = 600
+        #     min_len = 100
 
 
-        self.summary_data = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+        # # 요약 생성
+        # summary_ids = model.generate(
+        #     input_ids=inputs["input_ids"],
+        #     attention_mask=inputs["attention_mask"],
+        #     max_length=max_len,
+        #     min_length=min_len,
+        #     num_beams=4,
+        #     repetition_penalty=1.3,
+        #     no_repeat_ngram_size=5,
+        #     length_penalty=1.0,
+        #     bos_token_id=model.config.bos_token_id,
+        #     eos_token_id=model.config.eos_token_id,
+        # )
+
+
+        # self.summary_data = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 

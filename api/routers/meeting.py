@@ -68,7 +68,7 @@ async def summarize_audio(file_id: str):
             speaker_num=2,
             domain="일반",
             profanity_filter=True,
-            keyword=["홍대", "성수", "신제품", "SKALA", "광고"],
+            keyword=["NDVI", "MQTT", "YOLOv8", "NIR"],
             dev=False,  # dev API 쓸 경우 True
         )
 
@@ -80,18 +80,21 @@ async def summarize_audio(file_id: str):
             api.api_get()
             print("🔁 재요청 중...")
 
-        print("✅ 텍스트 변환 완료:")
+        print("✅ 텍텍텍스트 변환 완료:")
         print(api.voice_data)
 
-        print("🧠 요약 중...")
-        api.summary_inference()
+        print("🧠 요요약 중...")
+        # api.summary_inference()
+        print("여기서 제공하는 요약 건너뜀")
 
-        print("\n📌 요약 결과:")
-        print(api.summary_data)
-        
+        print("\n📌 GPT 기반 요약으로 대체 결과 :")
+        summary = summarize_meeting_text(api.voice_data)
+        print(summary)
+
         return {
             "status": "success",
-            "transcription": api.summary_data,
+            "transcription": api.voice_data,
+            "summary": summary,
             "file_id": file_id
         }
     
