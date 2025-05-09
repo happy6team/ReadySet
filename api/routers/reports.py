@@ -14,7 +14,7 @@ router = APIRouter(
 ROOT_DIR = os.environ.get('PROJECT_ROOT_DIR', os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # 그동안 받았던 문서 목록 확인 api
-@router.get("/reports", response_model=ReportListResponse)
+@router.get("", response_model=ReportListResponse)
 async def get_report_list( fastapi_request: Request): 
     try:
         # 기본 AgentState의 thread_id 가져오기
@@ -34,7 +34,7 @@ async def get_report_list( fastapi_request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 # 문서 목록 중에서 선택한 문서 다운로드 api
-@router.post("/reports/download")
+@router.post("/download")
 async def download_report_file(fastapi_request: Request, source: str): 
     try:
         return download_file(source)

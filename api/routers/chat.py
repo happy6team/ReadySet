@@ -11,7 +11,7 @@ router = APIRouter(
     prefix="/chat",
     tags=["채팅"])
 
-@router.post("/chat", response_model=QueryResponse)
+@router.post("", response_model=QueryResponse)
 async def execute_query( fastapi_request: Request, input_query: str = Form(...)): 
     try:
         graph = fastapi_request.app.state.supervisor_graph
@@ -38,7 +38,7 @@ async def execute_query( fastapi_request: Request, input_query: str = Form(...))
         print("Error in execute_query:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/chat/reports/download")
+@router.post("/reports/download")
 async def download_report_file(fastapi_request: Request, source: str): 
     try:
         return download_file(source)
@@ -49,7 +49,7 @@ async def download_report_file(fastapi_request: Request, source: str):
         raise HTTPException(status_code=500, detail=f"파일 다운로드 오류: {str(e)}")
 
 
-@router.get("/chat/histories", response_model=ChatHistoryListResponse)
+@router.get("/histories", response_model=ChatHistoryListResponse)
 async def get_chat_histories(fastapi_request: Request): 
     try:
         # 기본 AgentState의 thread_id 가져오기

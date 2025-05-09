@@ -11,7 +11,7 @@ router = APIRouter(
     tags=["회의록"])
 
 # 텍스트 요약 API
-@router.post("/meeting/summarize")
+@router.post("/summarize")
 async def summarize_text(text: str = Form(...)):
     try:
         summarized_text = summarize_meeting_text(text)
@@ -26,7 +26,7 @@ async def summarize_text(text: str = Form(...)):
         return HTTPException(status_code=500, detail=str(e))
 
 # 음성 파일 업로드 API
-@router.post("/meeting/upload")
+@router.post("/upload")
 async def upload_audio(file: UploadFile = File(...)):
     try:
         UPLOAD_DIR= "meeting/resource"
@@ -51,7 +51,7 @@ async def upload_audio(file: UploadFile = File(...)):
         return HTTPException(status_code=500, detail=str(e))
 
 # 음성 파일 요약 API
-@router.post("/meeting/summarize/{file_id}")
+@router.post("/summarize/{file_id}")
 async def summarize_audio(file_id: str):
     try:
         # 파일 찾기
