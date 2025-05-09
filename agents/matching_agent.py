@@ -11,7 +11,10 @@ def initialize_employee_vectorstore():
     """직원 정보 텍스트 파일을 구조화된 방식으로 벡터 스토어에 저장합니다."""
     
     # 1. TXT 파일 로드
-    txt_file_path = "vector_store/docs/employee_info"
+    # 현재 스크립트의 절대 경로를 기준으로 파일 경로 설정
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    txt_file_path = os.path.join(current_dir, "vector_store", "docs", "employee_info", "smartfarm-employee-data-revised.txt")
+
     try:
         with open(txt_file_path, mode='r', encoding='utf-8') as file:
             text_content = file.read()
@@ -46,6 +49,7 @@ def initialize_employee_vectorstore():
             """
             # Document 객체 생성
             doc = Document(page_content=employee_info)
+            # print(doc)
             documents.append(doc)
 
     print(f"✓ {len(documents)}명의 직원 정보 파싱 완료")
@@ -54,7 +58,7 @@ def initialize_employee_vectorstore():
     embedding_model = OpenAIEmbeddings()
     
     # 5. 벡터 스토어 저장 경로 설정
-    persist_path = f"vector_store/db/employee_info_chroma"
+    persist_path = os.path.join(current_dir, "vector_store", "db", "employee_info_chroma")
 
     # 6. 디렉토리가 없으면 생성
     os.makedirs(persist_path, exist_ok=True)
@@ -75,14 +79,18 @@ def initialize_employee_vectorstore():
 # VectorDB 로딩
 def load_vectorstore():
     embedding = OpenAIEmbeddings()
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    vector_db_path = os.path.join(current_dir, "vector_store", "db", "employee_info_chroma")
+    
     return Chroma(
         embedding_function=embedding,
-        persist_directory="vector_store/db/employee_info_chroma"
+        persist_directory=vector_db_path
     )
 
 def match_person_for_query(query: str, project_name: str):
     vs = load_vectorstore()
     related_employees = vs.similarity_search(query, k=3)
+    # print(related_employees)
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
     # 직원 정보 포맷팅
@@ -90,18 +98,16 @@ def match_person_for_query(query: str, project_name: str):
     for i, doc in enumerate(related_employees, 1):
         employee_info += f"직원 {i}:\n{doc.page_content}\n\n"
     
+    # print("✅employee_info", employee_info)
     # 직접 추천 생성
     prompt = f"""
 You are the person-in-charge matching agent for {project_name}. Your role is to analyze the user's question and connect them with the appropriate person-in-charge.
 
-1. Extract {project_name}-related task keywords from the user's question.  
-2. Find and recommend the most relevant person-in-charge based on the extracted keywords.  
-3. If the question is unrelated to {project_name} or no keywords can be extracted, respond with:  
-   "No suitable person-in-charge found. Please ask a question related to {project_name}."
-
-Response format:  
-- If the question is related to {project_name}: Provide the person-in-charge information and the reason for the recommendation.  
-- If the question is unrelated to {project_name}: Provide the message "No suitable person-in-charge found."
+Instructions:
+1. Extract keywords from the user's question.
+2. ALWAYS match with one of the provided employees, regardless of question relevance to {project_name}.
+3. Select the employee whose responsibilities best align with the question's keywords.
+4. If no clear keyword match exists, select the employee whose role seems most general or administrative.
 
 Employee information is as follows:  
 {employee_info}
@@ -110,12 +116,25 @@ User question: {query}
 
 Project: {project_name}
 
-First, determine whether the question is related to {project_name}. If it is, select and recommend the single most appropriate person-in-charge from the above employee information.
+Response requirements:
+- ALWAYS provide a matched employee from the list. NEVER say "적합한 담당자를 찾을 수 없습니다."
+- Start immediately with the matched employee information without any introductory text
+- Format your response as follows:
+  이름: [이름]
+  이메일: [이메일]
+  부서: [부서]
+  직책: [직책]
+  담당업무: [담당업무]
+  
+  [매칭 이유 설명]
+- Keep the explanation concise and direct
+- Do not include any closing statements
 
-IMPORTANT: Please make sure to generate in Korean language.
+IMPORTANT: Generate response in Korean language. Be direct and concise.
 """
     
     response = llm.invoke(prompt)
+    # print(response)
     return response.content
 
 # LangGraph Supervisor용 invoke 함수 
@@ -146,3 +165,7 @@ def invoke(state: dict, config) -> dict:
         "thread_id": thread_id,
         "matching_result": result  # 매칭 결과 추가
     }
+
+if __name__ == "__main__":
+    # initialize_employee_vectorstore()
+    match_person_for_query("농업 규제에 대응하는 담당자 누구야", "스마트팜 프로젝트")
