@@ -93,7 +93,11 @@ class FindReportAgent:
                 model=self.openai_model,
                 temperature=self.temperature,
                 messages=[
-                    {"role": "system", "content": "당신은 프로젝트에 대한 이해도가 높은 프로젝트 매니저입니다. 사용자 질문에 대해 관련 문서 내용을 바탕으로 답변해주세요."},
+                    {"role": "system", "content": (
+                "You are a project manager who understands the project deeply. "
+                "Please answer based on the provided documents. "
+                "Respond **only** in Korean."
+            )},
                     {"role": "user", "content": f"질문: {query}\n\n관련 문서:\n{context}"}
                 ]
             )
