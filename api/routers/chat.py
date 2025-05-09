@@ -7,7 +7,9 @@ import pathlib
 import os
 from .reports import download_file
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/chat",
+    tags=["채팅"])
 
 @router.post("/chat", response_model=QueryResponse)
 async def execute_query( fastapi_request: Request, input_query: str = Form(...)): 

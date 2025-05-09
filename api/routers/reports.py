@@ -6,7 +6,11 @@ from urllib.parse import unquote
 import pathlib
 import os
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/reports",
+    tags=["문서 관리"]
+)
+
 ROOT_DIR = os.environ.get('PROJECT_ROOT_DIR', os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # 그동안 받았던 문서 목록 확인 api

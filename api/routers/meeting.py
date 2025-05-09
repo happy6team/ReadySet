@@ -6,7 +6,9 @@ import os
 import uuid
 import time
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/meeting",
+    tags=["회의록"])
 
 # 텍스트 요약 API
 @router.post("/meeting/summarize")

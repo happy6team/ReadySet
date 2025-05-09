@@ -29,7 +29,8 @@ thread_query_history: Dict[str, List[str]] = {} # thread_id, query list
 
 app = FastAPI(
     title="TeamFit API", 
-    description="TeamFit Graph Execution API"
+    description="TeamFit Graph Execution API",
+    tags=["welcome"]
 )
 
 app.add_middleware(
@@ -53,7 +54,7 @@ app.state.add_thread_query = add_thread_query
 app.state.get_thread_queries = get_thread_queries
 
 @app.get("/")
-async def root():
+async def welcome():
     return {"message": "Welcome to the TeamFit FastAPI server!"}
 
 app.include_router(chat.router)
