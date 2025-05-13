@@ -32,7 +32,7 @@ ReadySet 신입 개발자의 빠른 실무 투입을 돕는 AI 기반 멘토링 
 
 1. 저장소 클론
    ```
-   git clone
+   git clone {저장소 url}
    cd ReadySet
    ```
    
@@ -45,7 +45,7 @@ ReadySet 신입 개발자의 빠른 실무 투입을 돕는 AI 기반 멘토링 
 3. 가상환경 활성화
    ```
    source venv/bin/activate  # mac
-   venv\Scripts\activate.ps1 # Windows powershell
+   venv\Scripts\activate # Windows powershell
    ```
    
 4. 패키지 설치
