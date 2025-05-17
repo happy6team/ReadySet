@@ -1,7 +1,5 @@
 from fastapi import FastAPI
-from api.routers import chat
-from api.routers import meeting
-from api.routers import reports
+from api.routers import chat, meeting, reports, human_resource
 from dotenv import load_dotenv
 from graph import create_supervisor_graph
 from agent_state import AgentState
@@ -59,6 +57,7 @@ async def welcome():
 app.include_router(chat.router)
 app.include_router(meeting.router)
 app.include_router(reports.router)
+app.include_router(human_resource.router)
 
 if __name__ == "__main__":
     import uvicorn
