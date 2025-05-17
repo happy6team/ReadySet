@@ -11,7 +11,7 @@ load_dotenv()
 embedding_model = OpenAIEmbeddings()
 vectorstore = Chroma(
     embedding_function=embedding_model,
-    persist_directory="vector_store/db/new_employee_chroma"
+    persist_directory="../vector_store/db/new_employee_chroma"
 )
 
 # 프롬프트 템플릿 정의 (수정된 평가 기준)
@@ -52,42 +52,72 @@ matching_prompt = PromptTemplate(
 """
 )
 
-# 프로젝트와 적합한 신입사원 매칭 함수
+# 프로젝트와 적합한 신입사원 매칭 함수 (메타데이터 활용)
 def match_project_with_employees(project_info, top_n=3):
     """
     프로젝트 정보를 기반으로 적합한 신입사원을 찾아 매칭합니다.
+    메타데이터를 활용하여 결과 품질을 향상시킵니다.
     """
-    # 1. 벡터 검색으로 적합한 후보 10명 찾기
-    results = vectorstore.similarity_search_with_score(
-        project_info, 
-        k=10  # 후보 풀로 10명 검색
-    )
-    
-    # 검색 결과 확인 (결과가 있는지)
-    if not results:
-        return "적합한 신입사원을 찾을 수 없습니다."
-    
-    # 2. 신입사원 정보 텍스트로 변환
-    employees_text = ""
-    for i, (doc, score) in enumerate(results, 1):
-        employees_text += f"""신입사원 #{i}:
+    try:
+        # 디버깅 정보 출력
+        print(f"프로젝트 정보를 기반으로 검색을 시작합니다...")
+        
+        # 1. 벡터 검색으로 적합한 후보 10명 찾기
+        results = vectorstore.similarity_search_with_score(
+            project_info, 
+            k=10  # 후보 풀로 10명 검색
+        )
+        
+        # 검색 결과 확인 (결과가 있는지)
+        if not results:
+            print("검색 결과가 없습니다.")
+            return "적합한 신입사원을 찾을 수 없습니다."
+        
+        print(f"{len(results)}명의 후보를 찾았습니다.")
+        
+        # 2. 신입사원 정보 텍스트로 변환 (메타데이터 활용)
+        employees_text = ""
+        for i, (doc, score) in enumerate(results, 1):
+            # 메타데이터 확인
+            metadata = doc.metadata if hasattr(doc, 'metadata') else {}
+            
+            # 메타데이터 정보 출력 (디버깅용)
+            print(f"후보 {i}: {metadata.get('name', '이름 없음')} - 유사도: {(1-score):.3f}")
+            
+            # 메타데이터를 포함한 구조화된 텍스트 생성
+            employee_info = f"""신입사원 #{i}:
+ID: {metadata.get('id', 'ID 정보 없음')}
+이름: {metadata.get('name', '이름 정보 없음')}
+직책: {metadata.get('position', '직책 정보 없음')}
+부서: {metadata.get('department', '부서 정보 없음')}
+기술 스택: {metadata.get('skills', '기술 정보 없음')}
+
 {doc.page_content}
 유사도 점수: {(1-score):.2f}
 
 """
+            employees_text += employee_info
+        
+        # 3. LLM을 사용한 상세 매칭 수행
+        llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
+        matching_chain = matching_prompt | llm
+        
+        # 매칭 결과 생성
+        print("LLM을 사용하여 최종 매칭을 수행 중...")
+        result = matching_chain.invoke({
+            'new_employees': employees_text,
+            'project_info': project_info,
+            'top_n': top_n
+        })
+        
+        print("매칭 완료!")
+        return result.content
     
-    # 3. LLM을 사용한 상세 매칭 수행
-    llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
-    matching_chain = matching_prompt | llm
-    
-    # 매칭 결과 생성
-    result = matching_chain.invoke({
-        'new_employees': employees_text,
-        'project_info': project_info,
-        'top_n': top_n
-    })
-    
-    return result.content
+    except Exception as e:
+        print(f"오류 발생: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return f"매칭 과정에서 오류가 발생했습니다: {str(e)}"
 
 # 메인 함수
 def main():
@@ -136,6 +166,44 @@ def main():
     print(result)
     
     print("\n프로그램을 종료합니다. 감사합니다!")
+
+# # 벡터 DB 테스트 함수
+# def test_vector_db():
+#     """
+#     벡터 DB가 제대로 설정되었는지 테스트합니다.
+#     """
+#     print("벡터 DB 테스트 중...")
+    
+#     try:
+#         # 간단한 쿼리로 테스트
+#         results = vectorstore.similarity_search("UI 디자이너", k=1)
+        
+#         if results:
+#             print("✅ 벡터 DB 테스트 성공!")
+#             print(f"샘플 결과: {results[0].page_content[:100]}...")
+            
+#             # 메타데이터 확인
+#             if hasattr(results[0], 'metadata') and results[0].metadata:
+#                 print("✅ 메타데이터 존재!")
+#                 print(f"메타데이터 샘플: {results[0].metadata}")
+#             else:
+#                 print("⚠️ 메타데이터가 없습니다. 결과 품질이 저하될 수 있습니다.")
+#         else:
+#             print("❌ 벡터 DB에 데이터가 없습니다.")
+        
+#         return bool(results)
+    
+#     except Exception as e:
+#         print(f"❌ 벡터 DB 테스트 실패: {str(e)}")
+#         return False
+
+# if __name__ == "__main__":
+#     # 시작 전 벡터 DB 테스트
+#     if test_vector_db():
+#         main()
+#     else:
+#         print("\n⚠️ 벡터 DB 설정에 문제가 있습니다.")
+#         print("store_new_employees.py를 먼저 실행하여 데이터를 저장해주세요.")
 
 if __name__ == "__main__":
     main()
