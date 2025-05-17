@@ -64,13 +64,28 @@ def process_project_matching():
     matching_result = project_matching(new_employee, projects, top_n=3)
     return matching_result
 
-if __name__ == "__main__":
-    start_time = time.time()  
+def invoke(state:dict, config) -> dict:
+    project_matching_result = process_project_matching()
 
+    new_messages = list(state.get("message",[]))
+    new_messages.append(f"🧠 프로젝트별 추천 인재 결과:\n{project_matching_result}")
+
+    # thread_id 설정
+    thread_id = (
+        getattr(config, "configurable", {}).get("thread_id")
+        if hasattr(config, "configurable")
+        else config.get("thread_id", "default")
+    )
+
+    return {
+        **state,
+        "messages": new_messages,
+        "thread_id": thread_id,
+    }
+
+if __name__ == "__main__":
     # 직접 실행 시 추출 함수를 호출하고 결과를 출력
     result = process_project_matching()
-    end_time = time.time()
-    print(f"총 실행 시간: {end_time - start_time:.2f}초")
     # LLM의 응답(content) 출력
     print("=== 프로젝트 매칭결과 ===")
     print(result)
