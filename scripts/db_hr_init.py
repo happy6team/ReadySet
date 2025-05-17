@@ -3,6 +3,7 @@ import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
+from models.human_resource import HumanResource
 
 from config.db_config import Base, async_engine, AsyncSessionLocal
 
