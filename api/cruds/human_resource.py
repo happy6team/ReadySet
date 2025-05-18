@@ -52,3 +52,12 @@ class HumanResourceRepository:
             "has_next": page < total_pages,
             "has_prev": page > 1
         }
+    
+    async def get_by_id(self, employee_id: str) -> Optional[HumanResource]:
+        """
+        직원 ID로 한 명의 직원 정보를 조회합니다.
+        """
+        query = select(HumanResource).where(HumanResource.id == employee_id)
+        result = await self.session.execute(query)
+        return result.scalars().first()
+    
