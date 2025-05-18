@@ -41,7 +41,10 @@ matching_prompt = PromptTemplate(
 다음 형식으로 반환하세요:
 -프로젝트명:
 -추천 인재: [
-        신입사원 이름:
+        이름:
+        ID:
+        부서:
+        기술 스택:
         종합 점수: 0.0    # 0.0~10.0 사이 점수
         평가 항목별 점수: 
             핵심 기술 일치도: 0.0,    # 0.0~4.0
@@ -87,7 +90,7 @@ def match_project_with_employees(project_info, top_n=3):
         for i, (doc, score) in enumerate(results, 1):
             # 메타데이터 확인
             metadata = doc.metadata if hasattr(doc, 'metadata') else {}
-            
+
             # 메타데이터 정보 출력 (디버깅용)
             print(f"후보 {i}: {metadata.get('name', '이름 없음')} - 유사도: {(1-score):.3f}")
             
