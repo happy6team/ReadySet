@@ -10,7 +10,10 @@ load_dotenv()
 print("=============== 신입사원 데이터 로드 시작 ===============")
 
 # JSON 파일 로드
-json_file_path = '../data/hr_employees_data.json'
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+json_file_path = os.path.join(project_root, 'data', 'hr_employees_data.json')
+
 with open(json_file_path, 'r', encoding='utf-8') as file:
     employees_data = json.load(file)
 
@@ -73,6 +76,10 @@ embedding_model = OpenAIEmbeddings()
 # 벡터 DB 초기화
 vectorstore = None
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+vectorstore_path = os.path.join(project_root, 'vector_store', 'db', 'new_employee_chroma')
+
 # 배치 처리
 for i in range(0, len(texts), batch_size):
     batch_end = min(i + batch_size, len(texts))
@@ -88,7 +95,7 @@ for i in range(0, len(texts), batch_size):
             texts=batch_texts,
             embedding=embedding_model,
             metadatas=batch_metadatas,
-            persist_directory="../vector_store/db/new_employee_chroma"
+            persist_directory=vectorstore_path
         )
     else:
         # 이후 배치

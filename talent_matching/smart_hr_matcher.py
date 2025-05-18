@@ -4,14 +4,21 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.prompts import PromptTemplate
 
+import os
+
 # 환경 변수 로드
 load_dotenv()
 
 # 벡터 DB 초기화
 embedding_model = OpenAIEmbeddings()
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+vector_store_path = os.path.join(project_root, 'vector_store', 'db', 'new_employee_chroma')
+
 vectorstore = Chroma(
     embedding_function=embedding_model,
-    persist_directory="../vector_store/db/new_employee_chroma"
+    persist_directory=vector_store_path
 )
 
 # 프롬프트 템플릿 정의 (수정된 평가 기준)
@@ -61,7 +68,7 @@ def match_project_with_employees(project_info, top_n=3):
     try:
         # 디버깅 정보 출력
         print(f"프로젝트 정보를 기반으로 검색을 시작합니다...")
-        
+        # print(project_info)
         # 1. 벡터 검색으로 적합한 후보 10명 찾기
         results = vectorstore.similarity_search_with_score(
             project_info, 
